@@ -34,8 +34,8 @@ async function generateOTP(slotID) {
   let data = snap.val() || { lastUsedDate: "", monthlyCount: 0, month: currentMonth() };
 
   if (data.month !== currentMonth()) { data.month = currentMonth(); data.monthlyCount = 0; }
-  if (data.monthlyCount >= 115) { alert("❌ Monthly limit reached"); return; }
-
+  if (data.monthlyCount >= 5) { alert("❌ Monthly limit reached"); return; }
+  if (data.lastUsedDate === today()) { alert("❌ Daily limit reached"); return; }
   const allowed = ['1', '3', '4', '6', '7', '9', 'A', 'B', 'C', 'D'];
   let otp = "";
   for (let i = 0; i < 4; i++) {
