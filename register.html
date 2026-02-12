@@ -1,0 +1,48 @@
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>Register</h2>
+
+<input id="username" placeholder="Username">
+<input id="email" placeholder="Email">
+
+<input id="password" type="password" placeholder="Password" disabled>
+
+<button id="sendOtpBtn" onclick="sendOTP()">Send OTP</button>
+<br> <br>
+
+<div id="otpBox" style="display:none">
+  <input id="otpInput" placeholder="Enter OTP">
+  <button onclick="verifyOTP()">Verify OTP</button>
+  <p id="timerText"></p>
+</div>
+
+<button id="registerBtn" onclick="register()" disabled>Register</button>
+
+<p id="msg"></p>
+
+</div>
+
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+emailjs.init("GyycTjHiX08ot_8ib");
+</script>
+
+<script type="module" src="auth.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,688 @@
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+
+import { getAuth, createUserWithEmailAndPassword }
+from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+import { getFirestore, doc, getDoc, setDoc }
+from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+/* ================= FIREBASE CONFIG ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyD-YgASdaF2bPxVF68Rzl95znYjDrz_oLM",
+  authDomain: "sanitarypadvending.firebaseapp.com",
+  projectId: "sanitarypadvending",
+  storageBucket: "sanitarypadvending.firebasestorage.app",
+  messagingSenderId: "615976262646",
+  appId: "1:615976262646:web:fc8127cb42e0534fc905d7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ================= OTP VARIABLES ================= */
+let generatedOTP = "";
+let otpVerified = false;
+let timerInterval;
+let timeLeft = 30;
+
+/* ================= PASSWORD VALIDATION ================= */
+function isStrongPassword(password) {
+  return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#]).{8,}$/.test(password);
+}
+
+/* ================= SEND OTP ================= */
+window.sendOTP = function () {
+  const email = document.getElementById("email").value;
+  const sendBtn = document.getElementById("sendOtpBtn");
+
+  if (!email) {
+    alert("Enter email first");
+    return;
+  }
+
+  generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+
+  emailjs.send("service_lcq83am", "template_f4ztyn6", {
+    to_email: email,
+    otp: generatedOTP
+  });
+
+  document.getElementById("otpBox").style.display = "block";
+  sendBtn.innerText = "Send OTP";
+  startTimer();
+};
+
+/* ================= OTP TIMER ================= */
+function startTimer() {
+  timeLeft = 45;
+  document.getElementById("timer").innerText =
+    `OTP expires in ${timeLeft}s`;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById("timer").innerText =
+      `OTP expires in ${timeLeft}s`;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      generatedOTP = "";
+      document.getElementById("sendOtpBtn").innerText = "Resend OTP";
+      alert("OTP expired. Please resend OTP.");
+    }
+  }, 1000);
+}
+
+/* ================= VERIFY OTP ================= */
+window.verifyOTP = function () {
+  const enteredOTP = document.getElementById("otp").value;
+
+  if (enteredOTP === generatedOTP) {
+    clearInterval(timerInterval);
+    otpVerified = true;
+
+    // ✅ HIDE OTP BOX
+    document.getElementById("otpBox").style.display = "none";
+
+    // ✅ REMOVE SEND OTP BUTTON
+document.getElementById("sendOtpContainer").style.display = "none";
+
+    // ✅ ENABLE PASSWORD & REGISTER
+    document.getElementById("password").disabled = false;
+    document.getElementById("registerBtn").disabled = false;
+
+    document.getElementById("msg").innerText =
+      "OTP verified successfully ✅";
+  } else {
+    alert("Wrong OTP");
+  }
+};
+
+// window.verifyOTP = function () {
+//   const enteredOTP = document.getElementById("otp").value;
+
+//   if (enteredOTP === generatedOTP) {
+//     clearInterval(timerInterval);
+//     otpVerified = true;
+
+//     document.getElementById("otpBox").style.display = "none";
+//     document.getElementById("password").disabled = false;
+//     document.getElementById("registerBtn").disabled = false;
+//     document.getElementById("sendOtpBtn").disabled = true;
+
+//     document.getElementById("msg").innerText =
+//       "OTP verified successfully ✅";
+//   } else {
+//     alert("Wrong OTP");
+//   }
+// };
+
+/* ================= REGISTER ================= */
+window.register = async function () {
+  const username = document.getElementById("username").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+  const msg = document.getElementById("msg");
+
+  if (!username || !email || !password) {
+    msg.innerText = "❌ All fields required";
+    return;
+  }
+
+  if (!otpVerified) {
+    msg.innerText = "❌ Verify OTP first";
+    return;
+  }
+
+  if (!isStrongPassword(password)) {
+    msg.innerText =
+      "❌ Password must have upper, lower, number, special & min 8 chars";
+    return;
+  }
+
+  try {
+    // Username exists
+    const userSnap = await getDoc(doc(db, "users", username));
+    if (userSnap.exists()) {
+      msg.innerText = "❌ Username already exists";
+      return;
+    }
+
+    // Email exists
+    const emailSnap = await getDoc(doc(db, "emails", email));
+    if (emailSnap.exists()) {
+      msg.innerText = "❌ Email already registered";
+      return;
+    }
+
+    await createUserWithEmailAndPassword(auth, email, password);
+
+    await setDoc(doc(db, "users", username), { username, email });
+    await setDoc(doc(db, "emails", email), { username });
+
+    alert("Registration successful");
+    window.location.href = "index.html";
+
+  } catch (err) {
+    msg.innerText = err.message;
+  }
+};
+
+
+
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getDatabase, ref, set, get, update, push } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+// 🔴 PASTE YOUR REAL CONFIG HERE
+const firebaseConfig = {
+  apiKey: "AIzaSyD-YgASdaF2bPxVF68Rzl95znYjDrz_oLM",
+  authDomain: "sanitarypadvending.firebaseapp.com",
+  databaseURL: "https://sanitarypadvending-default-rtdb.firebaseio.com",
+  projectId: "sanitarypadvending",
+  storageBucket: "sanitarypadvending.firebasestorage.app",
+  messagingSenderId: "615976262646",
+  appId: "1:615976262646:web:fc8127cb42e0534fc905d7",
+  measurementId: "G-GSVH4DY9YW"
+};
+
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// ✅ REGISTER
+window.register = function () {
+  createUserWithEmailAndPassword(auth, email.value, password.value)
+    .then((cred) => {
+      set(ref(db, "users/" + cred.user.uid), {
+        lastUsedDate: "",
+        monthlyCount: 0,
+        month: new Date().getMonth() + 1
+      });
+      alert("Registered Successfully");
+    })
+    .catch(err => alert(err.message));
+};
+
+// ✅ LOGIN
+window.login = function () {
+  signInWithEmailAndPassword(auth, email.value, password.value)
+    .then(() => {
+      window.location = "dashboard.html";
+    })
+    .catch(err => alert(err.message));
+};
+
+// 🔁 DATE
+function today() {
+  return new Date().toISOString().split("T")[0];
+}
+
+// ✅ PAD LOGIC
+window.selectPad = async function (size) {
+  const uid = auth.currentUser.uid;
+  const userRef = ref(db, "users/" + uid);
+  const snap = await get(userRef);
+  let data = snap.val();
+  let currentMonth = new Date().getMonth() + 1;
+
+  if (data.month !== currentMonth) {
+    data.monthlyCount = 0;
+    data.month = currentMonth;
+  }
+
+  if (data.lastUsedDate === today()) {
+    alert("Already taken today ❌");
+    return;
+  }
+
+  if (data.monthlyCount >= 5) {
+    alert("Monthly limit reached ❌");
+    return;
+  }
+
+  await update(userRef, {
+    lastUsedDate: today(),
+    monthlyCount: data.monthlyCount + 1,
+    month: currentMonth
+  });
+
+  push(ref(db, "pads"), {
+    uid: uid,
+    size: size,
+    date: today()
+  });
+
+  alert("Pad Allowed ✅");
+};
+function login() {
+  const roll = document.getElementById("roll").value;
+  const pass = document.getElementById("pass").value;
+  // DEMO login check
+  if (roll === "21EC123" && pass === "1234") {
+    localStorage.setItem("user", roll);
+    window.location.href = "dashboard.html";
+  } else {
+    document.getElementById("msg").innerText = "❌ Invalid Login";
+  }
+}
+// OTP Generator
+function generateOTP() {
+  const otp = Math.floor(1000 + Math.random() * 9000);
+  document.getElementById("otp").innerText = otp;
+  // Here you will send OTP to Firebase later
+}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+  <h2>Pad Vending</h2>
+
+  <div class="grid">
+    <button onclick="generateOTP()">Get 1 Pad</button>
+    <button onclick="generateOTP()">Get 2 Pad</button>
+    <button onclick="generateOTP()">Get 3 Pad</button>
+    <button onclick="generateOTP()">Get 4 Pad</button>
+    <button onclick="generateOTP()">Get 5 Pad</button>
+    <button onclick="generateOTP()">Get 6 Pad</button>
+  </div>
+
+  <h3>Your OTP</h3>
+  <h1 id="otp">----</h1>
+  <p>Valid for 30 seconds</p>
+</div>
+
+<script type="module" src="otp.js"></script>
+</body>
+</html>
+{/* <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+};
+
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+</script> */}
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD-YgASdaF2bPxVF68Rzl95znYjDrz_oLM",
+  authDomain: "sanitarypadvending.firebaseapp.com",
+  projectId: "sanitarypadvending",
+  storageBucket: "sanitarypadvending.firebasestorage.app",
+  messagingSenderId: "615976262646",
+  appId: "1:615976262646:web:fc8127cb42e0534fc905d7"
+};
+
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+  <h2>Student Login</h2>
+
+  <!-- Username -->
+  <input id="username" placeholder="Username / JNTU No">
+
+  <!-- Password -->
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="login()">Login</button>
+
+  <p class="small">
+    <a href="#" onclick="showForgot()">Forgot Password?</a>
+  </p>
+
+  <p class="small">
+    New user? <a href="register.html">Register</a>
+  </p>
+
+  <p class="msg" id="msg"></p>
+</div>
+
+<!-- Forgot Password Modal -->
+<div id="forgotBox" style="display:none" class="card">
+  <h3>Reset Password</h3>
+    
+  <input id="forgotEmail" placeholder="Registered Email">
+  <button onclick="resetPassword()">Send Reset Mail</button>
+
+  <p class="small">
+    <a href="#" onclick="hideForgot()">Back to Login</a>
+  </p>
+
+  <p class="msg" id="forgotMsg"></p>
+</div>
+
+<script type="module" src="login.js"></script>
+</body>
+</html>
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail
+} from
+"https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from
+"https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+/* 🔹 Firebase config */
+const firebaseConfig = {
+  apiKey: "AIzaSyD-YgASdaF2bPxVF68Rzl95znYjDrz_oLM",
+  authDomain: "sanitarypadvending.firebaseapp.com",
+  projectId: "sanitarypadvending",
+  storageBucket: "sanitarypadvending.firebasestorage.app",
+  messagingSenderId: "615976262646",
+  appId: "1:615976262646:web:fc8127cb42e0534fc905d7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ================= LOGIN ================= */
+window.login = async function () {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const msg = document.getElementById("msg");
+
+  if (!username || !password) {
+    msg.innerText = "❌ Enter username and password";
+    return;
+  }
+
+  try {
+    // get email using username
+    const userSnap = await getDoc(doc(db, "users", username));
+
+    if (!userSnap.exists()) {
+      msg.innerText = "❌ Username not found";
+      return;
+    }
+    
+    const email = userSnap.data().email;
+
+    await signInWithEmailAndPassword(auth, email, password);
+
+    // login success
+    window.location.href = "dashboard.html";
+
+  } catch (err) {
+    msg.innerText = "❌ Wrong password";
+  }
+};
+
+/* ================= FORGOT PASSWORD ================= */
+window.showForgot = function () {
+  document.querySelector(".card").style.display = "none";
+  document.getElementById("forgotBox").style.display = "block";
+};
+
+window.hideForgot = function () {
+  document.getElementById("forgotBox").style.display = "none";
+  document.querySelector(".card").style.display = "block";
+};
+
+window.resetPassword = async function () {
+  const email = document.getElementById("forgotEmail").value;
+  const msg = document.getElementById("forgotMsg");
+
+  if (!email) {
+    msg.innerText = "❌ Enter email";
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    msg.innerText = "✅ Password reset mail sent";
+  } catch (err) {
+    msg.innerText = "❌ Email not registered";
+  }
+};
+{
+  "name": "Pad Vending App",
+  "short_name": "PadApp",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#e91e63"
+}
+// import { db, auth } from "./firebase.js";
+// import { doc, setDoc } from
+// "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+// window.generateOTP = function () {
+//   const otp = Math.floor(1000 + Math.random() * 9000);
+//   const expiry = Date.now() + 30000;
+
+//   setDoc(doc(db, "otp", auth.currentUser.uid), {
+//     otp: otp,
+//     expiry: expiry,
+//     used: false
+//   });
+
+//   document.getElementById("otp").innerText = otp;
+// };
+import { db } from "./firebase.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+window.generateOTP = async function () {
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  const expiry = Date.now() + 60000; // ✅ 1 minute
+
+  // ✅ Save OTP in Firestore fixed document
+  await setDoc(doc(db, "otp", "current"), {
+    otp: otp,
+    expiry: expiry,
+    used: false
+  });
+
+  document.getElementById("otp").innerText = otp;
+};
+// import { db, auth } from "./firebase.js";
+// import { doc, setDoc } from
+// "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+// window.generateOTP = function () {
+//   const otp = Math.floor(1000 + Math.random() * 9000);
+//   const expiry = Date.now() + 30000;
+
+//   setDoc(doc(db, "otp", auth.currentUser.uid), {
+//     otp: otp,
+//     expiry: expiry,
+//     used: false
+//   });
+
+//   document.getElementById("otp").innerText = otp;
+// };
+import { db } from "./firebase.js";
+import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+window.generateOTP = async function () {
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  const expiry = Date.now() + 60000; // ✅ 1 minute
+
+  // ✅ Save OTP in Firestore fixed document
+  await setDoc(doc(db, "otp", "current"), {
+    otp: otp,
+    expiry: expiry,
+    used: false
+  });
+
+  document.getElementById("otp").innerText = otp;
+};
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    #otpBox { display: none; }
+    .small-text { font-size: 12px; margin-top: 10px; }
+    .small-text button {
+      background: none;
+      border: none;
+      color: blue;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Register</h2>
+
+  <input id="username" placeholder="Username / JNTU No">
+  <input id="email" placeholder="Email">
+
+  <!-- Password -->
+  <input id="password" type="password" placeholder="Password" disabled>
+  <p id="passMsg"></p>
+
+  <!-- Send / Resend OTP -->
+<div id="sendOtpContainer">
+  <button id="sendOtpBtn" onclick="sendOTP()">Send OTP</button>
+</div><br>
+
+  <!-- OTP Box -->
+  <div id="otpBox">
+    <input id="otp" placeholder="Enter OTP">
+    <button id="verifyBtn" onclick="verifyOTP()">Verify OTP</button>
+    <p id="timer"></p>
+  </div>
+
+  <!-- Register -->
+  <button onclick="register()" disabled id="registerBtn">Register</button>
+
+  <p class="msg" id="msg"></p>
+
+  <!-- Already have account -->
+  <div class="small-text">
+    Already have an account?
+    <button onclick="window.location.href='index.html'">Login</button>
+  </div>
+</div>
+
+<!-- EmailJS -->
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<script>
+  emailjs.init("GyycTjHiX08ot_8ib");
+</script>
+
+<script type="module" src="auth.js"></script>
+</body>
+</html>
+self.addEventListener("fetch", e => {
+  e.respondWith(fetch(e.request));
+});
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg,#ff416c,#ff4b2b);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  background: white;
+  padding: 30px;
+  width: 320px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns */
+  grid-template-rows: repeat(3, auto);   /* 3 rows */
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.grid button {
+  padding: 15px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+}
+
+.grid button:hover {
+  background-color: #388E3C;
+}
+
+
+h2 { color: #ff416c; }
+
+input {
+  width: 90%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: #ff416c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #ff4b2b;
+}
+
+a {
+  color: #ff416c;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.msg {
+  color: red;
+  margin-top: 10px;
+}
+
