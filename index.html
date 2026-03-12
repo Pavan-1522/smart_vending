@@ -1,51 +1,687 @@
-
-
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Dispensary System</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a53d0;
+            --secondary: #e0e7ff;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #d9e2ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--dark);
+        }
+
+        /* Layout & Containers */
+        .app-container {
+            width: 100%;
+            max-width: 1000px;
+            min-height: 80vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- Auth View --- */
+        #auth-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            height: 100%;
+            flex: 1;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-card h2 {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .auth-card p.subtitle { color: var(--gray); margin-bottom: 30px; }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15); }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--secondary); }
+        .btn-text { background: none; color: var(--gray); margin: 0; padding: 5px; font-size: 13px;}
+        .btn-text:hover { color: var(--primary); text-decoration: underline; }
+
+        /* --- Dashboard View --- */
+        #dashboard-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+            animation: fadeIn 0.6s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header h2 { color: var(--primary); font-size: 22px; display: flex; align-items: center; gap: 10px;}
+        
+        .header button {
+            background: #f1f5f9; color: var(--danger); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .header button:hover { background: #fee2e2; }
+
+        .dashboard-content { padding: 30px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+
+        .card {
+            background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.04);
+            transition: transform 0.3s ease; position: relative; overflow: hidden;
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.08); }
+        .card h3 { margin-bottom: 20px; color: var(--dark); font-size: 18px; display: flex; align-items: center; gap: 8px;}
+        .card h3 i { color: var(--primary); }
+
+        /* Usage Circular Progress */
+        .usage-container { display: flex; align-items: center; gap: 30px; }
+        .progress-circle {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: conic-gradient(var(--primary) calc(var(--percentage) * 1%), #e2e8f0 0);
+            display: flex; justify-content: center; align-items: center; position: relative;
+        }
+        .progress-circle::after {
+            content: ""; position: absolute; width: 80px; height: 80px; background: white; border-radius: 50%;
+        }
+        .progress-circle span { position: relative; z-index: 1; font-size: 24px; font-weight: 700; color: var(--dark); }
+        
+        .stats-text p { font-size: 14px; color: var(--gray); margin-bottom: 5px; }
+        .stats-text strong { font-size: 20px; color: var(--dark); }
+
+        /* Form Elements inside Cards */
+        select, input[type="number"] {
+            width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px; font-family: 'Poppins'; outline: none; transition: 0.3s;
+        }
+        select:focus, input[type="number"]:focus { border-color: var(--primary); }
+
+        /* Locked inputs styling */
+        .locked-input {
+            background-color: #f1f5f9;
+            cursor: not-allowed;
+            color: #64748b;
+        }
+
+        /* OTP Section Overlay/Modal */
+        #otpSection {
+            text-align: center; padding: 30px 20px; background: var(--dark); color: white; border-radius: 16px; margin-top: 20px;
+            animation: slideUp 0.4s ease forwards;
+            grid-column: span 2;
+        }
+        #otpDisplay {
+            font-size: 48px; font-weight: 700; letter-spacing: 12px; color: #10b981; margin: 15px 0; font-family: monospace; text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+        
+        .timer-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden; margin-top: 15px; }
+        .timer-progress { height: 100%; background: var(--success); width: 100%; transition: width 1s linear, background-color 0.3s; }
+
+        /* History List */
+        .history-card { grid-column: span 2; }
+        .history-list { list-style: none; max-height: 250px; overflow-y: auto; padding-right: 10px; }
+        .history-list::-webkit-scrollbar { width: 6px; }
+        .history-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .history-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; transition: 0.2s;
+        }
+        .history-item:hover { background: #f8fafc; border-radius: 8px; }
+        .history-item .date { font-size: 13px; color: var(--gray); }
+        .history-item .details { font-weight: 600; color: var(--dark); }
+        .history-item .badge { background: var(--secondary); color: var(--primary); padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .dashboard-content { grid-template-columns: 1fr; padding: 20px; }
+            .history-card, #otpSection { grid-column: span 1; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="card">
-  <h2>Student Login</h2>
-
-  <!-- Username -->
-  <input id="username" placeholder="Username / JNTU No">
-
-  <!-- Password -->
-  <input id="password" type="password" placeholder="Password">
-
-  <button onclick="login()">Login</button>
-
-  <p class="small">
-    <a href="#" onclick="showForgot()">Forgot Password?</a>
-  </p>
-
-  <p class="small">
-    New user? <a href="register.html">Register</a>
-  </p>
-
-  <p class="msg" id="msg"></p>
-</div>
-
-<!-- Forgot Password Modal -->
-<div id="forgotBox" style="display:none" class="card">
-  <h3>Reset Password</h3>
+<div class="app-container">
     
-  <input id="forgotEmail" placeholder="Registered Email">
-  <button onclick="resetPassword()">Send Reset Mail</button>
+    <div id="auth-view">
+        <div class="auth-card">
+            <i class="fa-solid fa-pump-medical" style="font-size: 48px; color: var(--primary); margin-bottom: 15px;"></i>
+            <h2>Smart Dispensary</h2>
+            <p class="subtitle">Hygiene made accessible and smart.</p>
 
-  <p class="small">
-    <a href="#" onclick="hideForgot()">Back to Login</a>
-  </p>
+            <div class="input-group">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" id="email" placeholder="Email Address">
+            </div>
+            
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" id="password" placeholder="Password">
+            </div>
+            
+            <button id="btnLogin" class="btn btn-primary"><i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In</button>
+            <button id="btnSignup" class="btn btn-outline"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+            <button id="btnReset" class="btn btn-text">Forgot your password?</button>
+        </div>
+    </div>
 
-  <p class="msg" id="forgotMsg"></p>
+    <div id="dashboard-view" class="hidden">
+        
+        <div class="header">
+            <h2><i class="fa-solid fa-pump-medical"></i> Dashboard</h2>
+            <button id="btnLogout"><i class="fa-solid fa-power-off"></i> Logout</button>
+        </div>
+
+        <div class="dashboard-content">
+            
+            <div class="card">
+                <h3><i class="fa-solid fa-chart-pie"></i> Your Usage</h3>
+                <div class="usage-container">
+                    <div class="progress-circle" id="usageCircle" style="--percentage: 0;">
+                        <span id="monthCountUI">0</span>
+                    </div>
+                    <div class="stats-text">
+                        <p style="color: var(--primary); font-weight: bold;">Daily Limit: <span id="dailyLimitDisplay">1</span></p>
+                        <p>Monthly Limit: <span id="monthlyLimitDisplay">5</span></p>
+                        <p style="margin-top: 10px;">Total Dispensed: <strong id="totalCount">0</strong></p>
+                        <p>Dispensed Today: <strong id="dailyCountUI" style="color: var(--primary);">0</strong></p>
+                    </div>
+                </div>
+                <span id="monthCount" class="hidden">0</span> 
+                <span id="dailyCount" class="hidden">0</span> 
+            </div>
+
+            <div class="card">
+                <h3><i class="fa-solid fa-box-open"></i> Request Dispense</h3>
+                
+                <label style="font-size: 12px; color: var(--gray); font-weight: 600; margin-bottom: 5px; display: block;">Select Slot</label>
+                <select id="slotSelect">
+                    <option value="slot1">Slot 1</option>
+                    <option value="slot2">Slot 2</option>
+                    <option value="slot3">Slot 3</option>
+                    <option value="slot4">Slot 4</option>
+                </select>
+                
+                <label style="font-size: 12px; color: var(--gray); font-weight: 600; margin-bottom: 5px; display: block;">Quantity</label>
+                <input type="number" id="padAmount" class="locked-input" value="1" disabled>
+                
+                <button id="btnGenerateOtp" class="btn btn-primary" style="margin-bottom: 0;">
+                    <i class="fa-solid fa-qrcode"></i> Generate OTP
+                </button>
+            </div>
+
+            <div class="card history-card" style="background: var(--secondary);">
+                <h3><i class="fa-solid fa-sliders"></i> System Limits (Admin)</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <label style="font-size: 12px; color: var(--dark); font-weight: 600;">Max Pads Per Day</label>
+                        <input type="number" id="settingDaily" min="1" value="1" style="border: none;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; color: var(--dark); font-weight: 600;">Max Pads Per Month</label>
+                        <input type="number" id="settingMonthly" min="1" value="5" style="border: none;">
+                    </div>
+                </div>
+                <button id="btnSaveSettings" class="btn btn-outline" style="background: white; margin-bottom: 0; padding: 10px;">
+                    Save New Limits
+                </button>
+            </div>
+
+            <div id="otpSection" class="card hidden" style="background: var(--dark); color: white;">
+                <h3 style="color: white; justify-content: center;"><i class="fa-solid fa-lock" style="color: #10b981;"></i> Enter Code on Machine</h3>
+                <div id="otpDisplay">------</div>
+                <p style="color: #94a3b8; font-size: 14px;">Time remaining: <span id="timerText" style="color: white; font-weight: bold;">60</span>s</p>
+                <div class="timer-bar">
+                    <div class="timer-progress" id="timerProgress"></div>
+                </div>
+            </div>
+
+            <div class="card history-card">
+                <h3><i class="fa-solid fa-clock-rotate-left"></i> Dispense History</h3>
+                <ul id="historyList" class="history-list">
+                </ul>
+            </div>
+
+        </div>
+    </div>
 </div>
 
-<script type="module" src="login.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, update, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+    // Your Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyD-YgASdaF2bPxVF68Rzl95znYjDrz_oLM",
+        authDomain: "sanitarypadvending.firebaseapp.com",
+        databaseURL: "https://sanitarypadvending-default-rtdb.firebaseio.com",
+        projectId: "sanitarypadvending",
+        storageBucket: "sanitarypadvending.firebasestorage.app",
+        messagingSenderId: "615976262646",
+        appId: "1:615976262646:web:fc8127cb42e0534fc905d7"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let currentUser = null;
+    let countdownInterval;
+    let requestListenerUnsubscribe = null;
+    let userListenerUnsubscribe = null;
+    let globalLimits = { daily: 1, monthly: 5 }; // Defaults
+
+    // Toast Notification Setup
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+    });
+
+    // DOM Elements
+    const authView = document.getElementById('auth-view');
+    const dashboardView = document.getElementById('dashboard-view');
+    
+    // ================= AUTH LOGIC =================
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            authView.classList.add('hidden');
+            dashboardView.classList.remove('hidden');
+            loadSettings();
+            setupRealtimeUserListener();
+            loadHistory();
+            Toast.fire({ icon: 'success', title: 'Signed in successfully' });
+        } else {
+            currentUser = null;
+            authView.classList.remove('hidden');
+            dashboardView.classList.add('hidden');
+            clearInterval(countdownInterval);
+            if(requestListenerUnsubscribe) requestListenerUnsubscribe();
+            if(userListenerUnsubscribe) userListenerUnsubscribe();
+            document.getElementById('otpSection').classList.add('hidden');
+            document.getElementById('btnGenerateOtp').disabled = false;
+        }
+    });
+
+    document.getElementById('btnLogin').onclick = () => {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        if(!e || !p) return Swal.fire('Error', 'Please enter email and password.', 'error');
+        
+        Swal.showLoading();
+        signInWithEmailAndPassword(auth, e, p)
+            .then(() => Swal.close())
+            .catch(err => Swal.fire('Login Failed', err.message, 'error'));
+    };
+
+    document.getElementById('btnSignup').onclick = async () => {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        if(!e || !p) return Swal.fire('Error', 'Please enter email and password.', 'error');
+        
+        Swal.showLoading();
+        try {
+            const userCred = await createUserWithEmailAndPassword(auth, e, p);
+            // Create user with expanded date tracking fields
+            await set(ref(db, 'users/' + userCred.user.uid), {
+                totalDispensed: 0,
+                monthlyDispensed: 0,
+                dailyDispensed: 0,
+                lastDispenseMonth: new Date().toISOString().slice(0, 7),
+                lastDispenseDate: new Date().toISOString().slice(0, 10)
+            });
+            Swal.close();
+        } catch (err) {
+            Swal.fire('Signup Failed', err.message, 'error');
+        }
+    };
+
+    document.getElementById('btnReset').onclick = () => {
+        const e = document.getElementById('email').value;
+        if(!e) return Swal.fire('Info', 'Please enter your email to reset password.', 'info');
+        sendPasswordResetEmail(auth, e)
+            .then(() => Swal.fire('Sent!', 'Password reset email sent!', 'success'))
+            .catch(err => Swal.fire('Error', err.message, 'error'));
+    };
+
+    document.getElementById('btnLogout').onclick = () => signOut(auth);
+
+
+    // ================= SETTINGS LOGIC =================
+    
+    function loadSettings() {
+        onValue(ref(db, 'settings/limits'), (snapshot) => {
+            if (snapshot.exists()) {
+                globalLimits = snapshot.val();
+                
+                // Update Admin Input Fields
+                document.getElementById('settingDaily').value = globalLimits.daily;
+                document.getElementById('settingMonthly').value = globalLimits.monthly;
+                
+                // Update UI Display text
+                document.getElementById('dailyLimitDisplay').innerText = globalLimits.daily;
+                document.getElementById('monthlyLimitDisplay').innerText = globalLimits.monthly;
+                
+                // Force a redraw of the circle based on new limits if user data is loaded
+                updateUsageUI(); 
+            } else {
+                // If it doesn't exist yet, save the defaults
+                set(ref(db, 'settings/limits'), globalLimits);
+            }
+        });
+    }
+
+    document.getElementById('btnSaveSettings').onclick = async () => {
+        const newDaily = parseInt(document.getElementById('settingDaily').value);
+        const newMonthly = parseInt(document.getElementById('settingMonthly').value);
+        
+        if (newDaily < 1 || newMonthly < 1) return Swal.fire('Invalid', 'Limits must be at least 1', 'error');
+        
+        await set(ref(db, 'settings/limits'), { daily: newDaily, monthly: newMonthly });
+        Toast.fire({ icon: 'success', title: 'System limits updated!' });
+    };
+
+
+    // ================= REAL-TIME DASHBOARD LOGIC =================
+    
+    let currentData = null; // Store locally for UI rendering
+
+    function setupRealtimeUserListener() {
+        const userRef = ref(db, 'users/' + currentUser.uid);
+        
+        userListenerUnsubscribe = onValue(userRef, async (snapshot) => {
+            if (snapshot.exists()) {
+                currentData = snapshot.val();
+                
+                const currentMonth = new Date().toISOString().slice(0, 7);
+                const currentDate = new Date().toISOString().slice(0, 10);
+                let needsUpdate = false;
+                
+                // Handle new month rollover
+                if (currentData.lastDispenseMonth !== currentMonth) {
+                    currentData.monthlyDispensed = 0;
+                    currentData.lastDispenseMonth = currentMonth;
+                    needsUpdate = true;
+                }
+                
+                // Handle new day rollover
+                if (currentData.lastDispenseDate !== currentDate) {
+                    currentData.dailyDispensed = 0;
+                    currentData.lastDispenseDate = currentDate;
+                    needsUpdate = true;
+                }
+
+                // If dates changed, sync them back to DB silently
+                if (needsUpdate) {
+                    await update(userRef, {
+                        monthlyDispensed: currentData.monthlyDispensed,
+                        lastDispenseMonth: currentData.lastDispenseMonth,
+                        dailyDispensed: currentData.dailyDispensed,
+                        lastDispenseDate: currentData.lastDispenseDate
+                    });
+                }
+
+                updateUsageUI();
+            }
+        });
+    }
+
+    function updateUsageUI() {
+        if (!currentData) return;
+
+        // Update raw numbers
+        document.getElementById('monthCount').innerText = currentData.monthlyDispensed;
+        document.getElementById('monthCountUI').innerText = currentData.monthlyDispensed;
+        document.getElementById('dailyCount').innerText = currentData.dailyDispensed;
+        document.getElementById('dailyCountUI').innerText = currentData.dailyDispensed;
+        document.getElementById('totalCount').innerText = currentData.totalDispensed;
+
+        // Update Circular Progress Bar based on the Monthly Limit
+        const percentage = (currentData.monthlyDispensed / globalLimits.monthly) * 100;
+        document.getElementById('usageCircle').style.setProperty('--percentage', percentage);
+        
+        // Turn red if monthly limit reached
+        if (currentData.monthlyDispensed >= globalLimits.monthly) {
+            document.getElementById('usageCircle').style.background = `conic-gradient(var(--danger) calc(${percentage} * 1%), #e2e8f0 0)`;
+        } else {
+            document.getElementById('usageCircle').style.background = `conic-gradient(var(--primary) calc(${percentage} * 1%), #e2e8f0 0)`;
+        }
+    }
+
+    function loadHistory() {
+        const historyRef = ref(db, 'history/' + currentUser.uid);
+        onValue(historyRef, (snapshot) => {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            if (snapshot.exists()) {
+                const records = [];
+                snapshot.forEach(child => records.push(child.val()));
+                records.reverse().forEach(data => {
+                    const slotName = data.slot.replace('slot', 'Slot ');
+                    list.innerHTML += `
+                        <li class="history-item">
+                            <div>
+                                <div class="details">Main Block - ${slotName}</div>
+                                <div class="date"><i class="fa-regular fa-calendar"></i> ${data.date}</div>
+                            </div>
+                            <div class="badge">${data.amount} Pad(s)</div>
+                        </li>
+                    `;
+                });
+            } else {
+                list.innerHTML = '<li style="padding: 20px; text-align: center; color: var(--gray);">No history found.</li>';
+            }
+        });
+    }
+
+    // ================= OTP GENERATION LOGIC =================
+
+    document.getElementById('btnGenerateOtp').onclick = async () => {
+        const slotId = document.getElementById('slotSelect').value;
+        const currentDailyCount = parseInt(document.getElementById('dailyCount').innerText);
+        const currentMonthCount = parseInt(document.getElementById('monthCount').innerText);
+        
+        // Block if Daily Limit is hit
+        if (currentDailyCount >= globalLimits.daily) {
+            Swal.fire('Limit Exceeded', `You have reached the daily limit of ${globalLimits.daily} pad(s). Please try again tomorrow.`, 'warning');
+            return;
+        }
+
+        // Block if Monthly Limit is hit
+        if (currentMonthCount >= globalLimits.monthly) {
+            Swal.fire('Limit Exceeded', `You have reached the monthly limit of ${globalLimits.monthly} pad(s).`, 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btnGenerateOtp');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+        // OTP Generation (Only 2, 5, 8, 0, 3, 6, 9)
+        const allowedDigits = ['2', '5', '8', '0', '3', '6', '9'];
+        let generatedOtp = '';
+        for(let i = 0; i < 4; i++) {
+            generatedOtp += allowedDigits[Math.floor(Math.random() * allowedDigits.length)];
+        }
+
+        document.getElementById('otpDisplay').innerText = generatedOtp;
+        document.getElementById('otpSection').classList.remove('hidden');
+        document.getElementById('otpSection').scrollIntoView({ behavior: 'smooth' });
+
+        const otpRef = ref(db, 'otp/' + slotId);
+        await set(otpRef, {
+            otp: generatedOtp,
+            user: currentUser.uid
+        });
+
+        let timeLeft = 60;
+        const timerText = document.getElementById('timerText');
+        const timerProgress = document.getElementById('timerProgress');
+        
+        timerText.innerText = timeLeft;
+        timerProgress.style.width = '100%';
+        timerProgress.style.backgroundColor = 'var(--success)';
+        
+        clearInterval(countdownInterval);
+        
+        countdownInterval = setInterval(async () => {
+            timeLeft--;
+            timerText.innerText = timeLeft;
+            
+            const percentage = (timeLeft / 60) * 100;
+            timerProgress.style.width = `${percentage}%`;
+            
+            if(timeLeft < 15) timerProgress.style.backgroundColor = 'var(--danger)';
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdownInterval);
+                document.getElementById('otpSection').classList.add('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-qrcode"></i> Generate OTP';
+                
+                Swal.fire('Expired', 'OTP Expired. Auto disposed.', 'error');
+                
+                await set(otpRef, { otp: "0000", user: "" }); 
+                if(requestListenerUnsubscribe) requestListenerUnsubscribe(); 
+            }
+        }, 1000);
+
+        requestListenerUnsubscribe = onValue(otpRef, async (snapshot) => {
+            const data = snapshot.val();
+            
+            if (data && (data.otp === "0000" || data === "0000") && timeLeft > 0) {
+                clearInterval(countdownInterval);
+                requestListenerUnsubscribe(); 
+                
+                document.getElementById('otpSection').classList.add('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-qrcode"></i> Generate OTP';
+                
+                await set(otpRef, { otp: "0000", user: "" });
+                
+                // IMPORTANT: Since ESP32 updates Total and Monthly in real-time, 
+                // we ONLY need to update the Daily tracker here so we don't double-count!
+                await update(ref(db, 'users/' + currentUser.uid), {
+                    dailyDispensed: currentDailyCount + 1,
+                    lastDispenseDate: new Date().toISOString().slice(0, 10)
+                });
+
+                await push(ref(db, 'history/' + currentUser.uid), {
+                    date: new Date().toLocaleString(),
+                    amount: 1,
+                    slot: slotId
+                });
+
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Dispensing pad now.',
+                    icon: 'success',
+                    confirmButtonColor: '#10b981'
+                });
+                
+                // No need to call loadUserData() manually, the onValue listener does it instantly!
+            }
+        });
+    };
+</script>
 </body>
 </html>
