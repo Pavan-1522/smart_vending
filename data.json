@@ -1,63 +1,12 @@
 {
-  "trips": {
-    "TRIP_1001": {
-      "details": {
-        "cargo": "Live Attenuated Vaccines",
-        "destination": "GMRIT College, Rajam",
-        "vehicle_id": "AP-30-X-1234",
-        "status": "in_transit"
-      },
-      "logs": {
-        "-NxY_pA8jKdLm9wQ3rZ1": {
-          "temperature": 4.1,
-          "accel_x": 0.5,
-          "accel_y": -0.2,
-          "accel_z": 9.8,
-          "motor_current": 3.4,
-          "lat": 18.4650,
-          "lng": 83.6580
-        },
-        "-NxY_qB9kLeMn0xR4sA2": {
-          "temperature": 4.2,
-          "accel_x": 0.6,
-          "accel_y": -0.1,
-          "accel_z": 9.9,
-          "motor_current": 3.5,
-          "lat": 18.4665,
-          "lng": 83.6595 
-        },
-        "-NxY_rC0lMfNo1yS5tB3": {
-          "temperature": 4.2,
-          "accel_x": 0.4,
-          "accel_y": -0.3,
-          "accel_z": 9.8,
-          "motor_current": 3.4,
-          "lat": 18.4676,
-          "lng": 83.6606 
-        }
-      },
-      "alerts": {
-        "-NxY_sD1mNgOp2zT6uC4": {
-          "temperature": 4.3,
-          "accel_x": 16.5, 
-          "accel_y": -4.1,
-          "accel_z": 11.2,
-          "motor_current": 3.6,
-          "lat": 18.4676,
-          "lng": 83.6606,
-          "alert": "VIOLENT_SHOCK"
-        },
-        "-NxY_tE2nOhPq3aU7vD5": {
-          "temperature": 4.8,
-          "accel_x": 0.5,
-          "accel_y": -0.2,
-          "accel_z": 9.8,
-          "motor_current": 11.2,
-          "lat": 18.4682,
-          "lng": 83.6612,
-          "alert": "COMPRESSOR_STALL_WARNING"
-        }
-      }
+  "Vehicle": {
+    "BatteryVolts": 12.4,
+    "EngineTemp": 45.5,
+    "FuelDist_cm": 15,
+    "FuelLeakAlert": false,
+    "GPS": {
+      "Lat": 17.3850,
+      "Lng": 78.4867
     }
   }
 }
